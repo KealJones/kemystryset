@@ -30,21 +30,32 @@
         // Public API
         /////////////////////////////////////////////////////////
         Kemystry = {
-            workArea: {},
+            workArea: document,
             open: function() {
-                Kemystry.workArea = document;
-                Kemystry.Deriver = myself.Deriver;
-                head = document.head || document.getElementsByTagName('head')[0];
-                var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
-                if (kemycalPhysicalProperties == null) {
-                    var kemycalPhysicalProperties = document.createElement('style');
-                    kemycalPhysicalProperties.id = 'kemycal_physical_properties';
-                    kemycalPhysicalProperties.type = 'text/css';
-                    head.appendChild(kemycalPhysicalProperties);
+                if (typeof this.workArea === "undefined") {
+                    this.workArea = document;
+                }
+                if (typeof this.Deriver === "undefined") {
+                    this.Deriver = myself.Deriver;
+                }
+                if (!myself._kit.opened) {
+                    myself._kit.opened = true;
+                    head = document.head || document.getElementsByTagName('head')[0] || document.body || document.getElementsByTagName('body')[0];
+                    var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
+                    if (kemycalPhysicalProperties == null) {
+                        var kemycalPhysicalProperties = document.createElement('style');
+                        kemycalPhysicalProperties.id = 'kemycal_physical_properties';
+                        kemycalPhysicalProperties.type = 'text/css';
+                        head.appendChild(kemycalPhysicalProperties);
+                    }
                 }
             },
             setup: function() {
-                myself._kit.tubes = myself._findAllTestTubes();
+                myself._setCSS();
+                if (Object.keys(myself._kit.tubes).length == 0) {
+                    myself._findAllTestTubes();
+                }
+
                 myself._kit.tubes.each(function(tube) {
                     tube.mixture().each(function(kemycal) {
                         kemycal.act();
@@ -59,7 +70,7 @@
                     if (kemycalProperties && myself._kit.beakers.hasOwnProperty(kemycalProperties.toLowerCase())) {
                         return {
                             prep: function(extProps) {
-                                myself._kit.beakers[kemycalProperties.toLowerCase()].prep(extProps);
+                                return myself._kit.beakers[kemycalProperties.toLowerCase()].prep(extProps);
                             }
                         };
                     }
@@ -80,7 +91,7 @@
                 } catch (e) {
                     workArea = wholeArea;
                 }
-                Kemystry.workArea = workArea;
+                this.workArea = workArea;
             }
         };
         /**
@@ -93,7 +104,6 @@
             for (var kemycal in _(this).mixture.Kemycals) {
                 var kemycalInst = _(this).mixture.Kemycals[kemycal];
                 _(kemycalInst).tube = this;
-                //kemycalInst.act();
                 if (_(kemycalInst).properties.intensive.hasOwnProperty('react_on')) {
                     for (var event in _(kemycalInst).properties.intensive.react_on) {
                         var eventName = _(kemycalInst).properties.intensive.react_on[event];
@@ -123,6 +133,19 @@
                     return this;
                 }
                 return _(this).testtube.innerHTML;
+            },
+            sell: function() {
+                var _ = myself._secretLab();
+                if (typeof $ != 'undefined') {
+                    return $(_(this).testtube);
+                }
+                if (typeof jQuery != 'undefined') {
+                    return jQuery(_(this).testtube);
+                }
+                if (typeof window.jQuery != 'undefined') {
+                    return window.jQuery(_(this).testtube);
+                }
+                return null; // Sorry, no one is buying
             }
         };
         /**
@@ -149,7 +172,7 @@
         Kemycal.prototype = {
             prep: function(userExtensive) {
                 var _ = myself._secretLab();
-                extendExtensive = function(destination, source) {
+                mergeExtensive = function(destination, source) {
                     for (var property in source) {
                         if (source[property] && source[property].constructor && source[property].constructor === Object) {
                             destination[property] = destination[property] || {};
@@ -160,7 +183,17 @@
                     }
                     return destination;
                 };
-                extendExtensive(this.extensive(), userExtensive);
+                if (_(this).properties.intensive.hasOwnProperty('user_extensive')) {
+                    if (_(this).properties.intensive.user_extensive != false) {
+                        mergeExtensive(this.extensive(), userExtensive);
+                    }
+                } else {
+                    mergeExtensive(this.extensive(), userExtensive);
+                }
+                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty('prep')) {
+                    Kemystry.open();
+                    _(this).properties.intensive.procedures.prep.apply(this, arguments);
+                }
                 return this;
             },
             act: function() {
@@ -215,13 +248,11 @@
                 if (state == undefined) {
                     state = myself.Deriver.underiveState(this.state());
                 }
-                var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
-                if (!myself._kit.physical_properties[_(this).properties.intensive.symbol]) {
-                    myself._kit.physical_properties[_(this).properties.intensive.symbol] = {};
+                if (state instanceof Array) {
+                    state = myself.Deriver.underiveState(state);
                 }
-                myself._kit.physical_properties[_(this).properties.intensive.symbol][state] = style;
-                css = myself._getCSS();
-                kemycalPhysicalProperties.innerHTML = css;
+                myself._addPhysicalProperties(this.symbol(), state, style);
+                myself._setCSS();
                 return this;
             },
             content: function(content) {
@@ -233,7 +264,23 @@
                 var _ = myself._secretLab();
                 return _(this).tube;
             },
-            others: function() {
+            getAllTubes: function() {
+                var _ = myself._secretLab();
+                if (Object.keys(myself._kit.tubes).length == 0) {
+                    myself._kit.tubes = myself._findAllTestTubes();
+                }
+                var all = myself._findTestTubesByKemycal(this.symbol());
+                return all;
+            },
+            getAll: function() {
+                var _ = myself._secretLab();
+                if (Object.keys(myself._kit.tubes).length == 0) {
+                    myself._kit.tubes = myself._findAllTestTubes();
+                }
+                var all = myself._findAllKemycalsBySymbol(this.symbol());
+                return all;
+            },
+            getOthers: function() {
                 var _ = myself._secretLab();
                 var others = myself._findAllKemycalsBySymbol(this.symbol());
                 for (var kemycal in others.Kemycals) {
@@ -242,7 +289,20 @@
                     }
                 }
                 return others;
-            }
+            },
+            sell: function() {
+                var _ = myself._secretLab();
+                if (typeof $ != 'undefined') {
+                    return this.tube().sell();
+                }
+                return 'Sorry, You Need Money.';
+            },
+            procedure: function(procedureId) {
+                var _ = myself._secretLab();
+                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty(procedureId)) {
+                    return _(this).properties.intensive.procedures[procedureId].apply(this, arguments);
+                }
+            },
         };
         /**
          * KemycalMixture is an array of Kemycal Instances
@@ -381,7 +441,8 @@
         myself._kit = {
             beakers: {},
             tubes: {},
-            physical_properties: {}
+            physical_properties: {},
+            opened: false
         };
         myself._secretLabStorage = {};
         myself._secretLabSeen = {};
@@ -438,6 +499,12 @@
             var uniqueId = (Math.random() * dateObject.getTime()).toString(36).substring(9);
             return uniqueId;
         };
+        myself._addPhysicalProperties = function(symbol, state, style) {
+            if (!myself._kit.physical_properties[symbol]) {
+                myself._kit.physical_properties[symbol] = {};
+            }
+            myself._kit.physical_properties[symbol][state] = style;
+        };
         myself._getCSS = function() {
             var css = '';
             for (var prop in myself._kit.physical_properties) {
@@ -449,11 +516,14 @@
                     }
                 }
             }
-            /*for (var attr in object){
-                if (object[attr] instanceof Object || object[attr] instanceof Array){
-                    //for (var attr in )
-                }
-            }*/
+            return css;
+        };
+        myself._setCSS = function() {
+            var css = myself._getCSS();
+            var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
+            if (kemycalPhysicalProperties != null) {
+                kemycalPhysicalProperties.innerHTML = css;
+            }
             return css;
         };
         myself._toCSS = function(name, value) {
@@ -472,7 +542,7 @@
                 return this.deriveFormula(kemycalFormula);
             },
             deriveFormula: function(formula) {
-                var derivedFormula = {},
+                var derivedFormula = [],
                     definitionCollection,
                     derivedKemycal;
                 var kemycalCollection = formula.split(KEMYCAL_SEPARATOR);
@@ -481,6 +551,8 @@
                 for (i; i < size; i++) {
                     derivedKemycal = this.deriveKemycal(kemycalCollection[i]);
                     derivedFormula[derivedKemycal.symbol] = derivedKemycal.state;
+                    // Try to solve multiple of same kemycal in one formula
+                    //derivedFormula.push([derivedKemycal.symbol,derivedKemycal.state]);
                 }
                 return derivedFormula;
             },
@@ -534,10 +606,10 @@
         };
         return Kemystry;
     }(Kemystry || {}));
-    Kemystry.open();
+    document.addEventListener('DOMContentLoaded', Kemystry.open);
     document.addEventListener('DOMContentLoaded', Kemystry.setup);
     if (typeof define === "function" && define.amd) {
-        define("kemystryset", [], function() {
+        define("kemystry", [], function() {
             return Kemystry;
         });
     }

@@ -1,12 +1,12 @@
-KemystrySet.beaker({
+Kemystry.beaker({
     // Simple Kemycal for Dynamic Utility Classes
     symbol: 'uc',
     extensive: {
-    	'preset': {
-    		's': '5',
-    		'm': '15',
-    		'l': '30'
-    	}
+        'preset': {
+            's': '5',
+            'm': '15',
+            'l': '30'
+        }
         'position': {
             't': 'top',
             'b': 'bottom',
@@ -29,9 +29,9 @@ KemystrySet.beaker({
             var state = this.state();
             var physicalObj = {};
             var property =
-                var amount = '';
+            var amount = '';
             if (state instanceof Array) {
-                if (this.extensive().hasOwnProperty(state[0])) {
+                if (this.extensive().utility.hasOwnProperty(state[0])) {
                     property += this.extensive(state[0]);
                 }
                 if (state.hasOwnProperty(1)) {
