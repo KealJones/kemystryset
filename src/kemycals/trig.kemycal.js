@@ -3,7 +3,6 @@ Kemystry.beaker({
     symbol: 'trig',
     react_on: ['click'],
     extensive: {
-        close_content: 'CLOSE',
         action: {
             show: {
                 off: {
@@ -22,34 +21,27 @@ Kemystry.beaker({
                 }
             },
             toggle: {
-                off: {
-                    'cursor': 'pointer',
-                    '-webkit-touch-callout': 'none',
-                    '-webkit-user-select': 'none',
-                    '-khtml-user-select': 'none',
-                    '-moz-user-select': 'none',
-                    '-ms-user-select': 'none',
-                    'user-select': 'none'
-                },
-                on: {
-                    'cursor': 'pointer',
-                    '-webkit-touch-callout': 'none',
-                    '-webkit-user-select': 'none',
-                    '-khtml-user-select': 'none',
-                    '-moz-user-select': 'none',
-                    '-ms-user-select': 'none',
-                    'user-select': 'none'
-                }
+                'cursor': 'pointer',
+                '-webkit-touch-callout': 'none',
+                '-webkit-user-select': 'none',
+                '-khtml-user-select': 'none',
+                '-moz-user-select': 'none',
+                '-ms-user-select': 'none',
+                'user-select': 'none'
             }
+        },
+        toggle_active_content: {
+            default: 'CLOSE',
+            test: 'Change Back!',
         }
     },
     procedures: {
         prep: function() {
-            var actionProps = this.extensive('action');
+            var actionProps = this.ext('action');
             var allTrigKemycals = this.getAll();
             var keyActions = {};
             allTrigKemycals.each(function(kemycal) {
-                var parsedState = kemycal.procedure('getState');
+                var parsedState = kemycal.proc('getState');
                 if (parsedState == null) {
                     return;
                 }
@@ -63,40 +55,59 @@ Kemystry.beaker({
                 for (var action in actions) {
                     action = actions[action];
                     if (actionProps.hasOwnProperty(action) && actionProps[action].hasOwnProperty('on')) {
-                        this.physical(actionProps[action].on, [key, action, 1]);
+                        this.phys(actionProps[action].on, [key, action, 1]);
                     }
                     if (actionProps.hasOwnProperty(action) && actionProps[action].hasOwnProperty('off')) {
-                        this.physical(actionProps[action].off, [key, action, 0]);
+                        this.phys(actionProps[action].off, [key, action, 0]);
+                    }
+                    if (action == 'toggle') {
+                        this.phys(actionProps[action], [key, action]);
                     }
                 }
             }
         },
         act: function() {
-            var parsedState = this.procedure('getState');
+            var parsedState = this.proc('getState');
             if (parsedState.action == 'toggle') {
-                this.extensive('default_content', this.tube().content());
+                var toc = this.ext('toggle_original_content');
+                if (toc == undefined) {
+                    this.ext('toggle_original_content', {});
+                }
+                this.ext('toggle_original_content.' + parsedState.key, this.tube.content());
             }
         },
         react: function(event) {
-            var parsedState = this.procedure('getState');
+            var parsedState = this.proc('getState');
             if (parsedState == null) {
                 return;
             }
             if (parsedState.action == 'toggle') {
-                this.procedure('switchStatus');
+                parsedState = this.proc('switchStatus');
                 this.getOthers().each(function(kemycal) {
-                    var kemycalstate = kemycal.procedure('getState');
+                    var kemycalstate = kemycal.proc('getState');
                     if (kemycalstate == null) {
                         return;
                     }
                     if (parsedState.key == kemycalstate.key) {
-                        kemycalstate = kemycal.procedure('switchStatus');
+                        kemycalstate = kemycal.proc('switchStatus');
                     }
                 });
                 if (parsedState.statusCode == 1) {
-                    this.content(this.extensive('default_content'));
+                    var tac = this.ext('toggle_active_content');
+                    if (tac != undefined) {
+                        if (tac.hasOwnProperty(parsedState.key)) {
+                            this.content(this.ext('toggle_active_content.' + parsedState.key));
+                        } else {
+                            this.content(this.ext('toggle_active_content.default'));
+                        }
+                    }
                 } else {
-                    this.content(this.extensive('close_content'));
+                    var toc = this.ext('toggle_original_content');
+                    if (toc) {
+                        if (toc.hasOwnProperty(parsedState.key)) {
+                            this.content(toc[parsedState.key]);
+                        }
+                    }
                 }
             }
         },
@@ -131,7 +142,7 @@ Kemystry.beaker({
             return parsedState;
         },
         switchStatus: function() {
-            var parsedState = this.procedure('getState');
+            var parsedState = this.proc('getState');
             if (parsedState.statusCode == 0 || parsedState.statusCode == "0") {
                 parsedState.statusCode = 1;
                 parsedState.status = 'on';
@@ -139,9 +150,8 @@ Kemystry.beaker({
                 parsedState.status = 'off';
                 parsedState.statusCode = 0;
             }
-
             this.state([parsedState.key, parsedState.action, parsedState.statusCode]);
-            return this.procedure('getState');
+            return this.proc('getState');
         },
     },
 });

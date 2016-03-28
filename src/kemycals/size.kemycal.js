@@ -5,7 +5,7 @@ Kemystry.beaker({
     procedures: {
         act: function(){
             var fraction = this.state().split('/');
-            this.physical({'width':(fraction[0]/fraction[1])*100+'%'});
+            this.phys({'width':(fraction[0]/fraction[1])*100+'%'});
         }
     }
 });

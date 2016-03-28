@@ -26,152 +26,139 @@
             KEMYCAL_PROPERTY_TAG_NAME = 'symbol',
             KEMYCAL_PROPERTY_METHODS_NAME = 'procedures',
             REQUIRED_KEMYCAL_PROPERTIES = ['name'];
-        /////////////////////////////////////////////////////////
-        // Public API
-        /////////////////////////////////////////////////////////
         Kemystry = {
-            workArea: document,
             open: function() {
-                if (typeof this.workArea === "undefined") {
-                    this.workArea = document;
-                }
-                if (typeof this.Deriver === "undefined") {
-                    this.Deriver = myself.Deriver;
-                }
-                if (!myself._kit.opened) {
-                    myself._kit.opened = true;
-                    head = document.head || document.getElementsByTagName('head')[0] || document.body || document.getElementsByTagName('body')[0];
-                    var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
-                    if (kemycalPhysicalProperties == null) {
-                        var kemycalPhysicalProperties = document.createElement('style');
-                        kemycalPhysicalProperties.id = 'kemycal_physical_properties';
-                        kemycalPhysicalProperties.type = 'text/css';
-                        head.appendChild(kemycalPhysicalProperties);
-                    }
-                }
             },
             setup: function() {
-                myself._setCSS();
-                if (Object.keys(myself._kit.tubes).length == 0) {
-                    myself._findAllTestTubes();
+                for (var symbol in Lab.Workspace.Beakers) {
+                    Lab.Workspace.Beakers[symbol].prep();
                 }
-
-                myself._kit.tubes.each(function(tube) {
-                    tube.mixture().each(function(kemycal) {
+                var allTubes = Lab.Util.Gather.Tubes.all();
+                Lab.Util.PhysicalCSS.setup();
+                allTubes.each(function(tube) {
+                    tube.getMixture().each(function(kemycal) {
                         kemycal.act();
+                        if (kemycal.intensive.hasOwnProperty('react_on')) {
+                            for (var event in kemycal.intensive.react_on) {
+                                var eventName = kemycal.intensive.react_on[event];
+
+                                (function(tube, kemycal, event) {
+                                    kemycal.tube.examine(event, function() {
+                                        kemycal.react(event)
+                                    })
+                                })(kemycal.tube, kemycal, eventName)
+                            }
+                        }
                     });
                 });
             },
             beaker: function(kemycalProperties) {
-                if (typeof kemycalProperties == 'object') {
-                    var beaker = myself._kit.beakers[kemycalProperties.symbol.toLowerCase()] = new Kemycal(kemycalProperties);
-                    return beaker;
-                } else {
-                    if (kemycalProperties && myself._kit.beakers.hasOwnProperty(kemycalProperties.toLowerCase())) {
-                        return {
-                            prep: function(extProps) {
-                                return myself._kit.beakers[kemycalProperties.toLowerCase()].prep(extProps);
-                            }
-                        };
-                    }
-                }
-            },
-            setWorkArea: function(selector) {
-                var workArea,
-                    wholeArea = document;
-                try {
-                    if (selector === 'document') {
-                        workArea = wholeArea;
-                    } else {
-                        workArea = wholeArea.querySelector(selector);
-                        if (!workArea) {
-                            workArea = wholeArea;
-                        }
-                    }
-                } catch (e) {
-                    workArea = wholeArea;
-                }
-                this.workArea = workArea;
+                return Beaker(kemycalProperties);
             }
         };
-        /**
-         * TestTube is a DOM element that has the DATATAG attribute.
-         */
-        function TestTube(el) {
-            var _ = myself._secretLab();
-            _(this).testtube = el;
-            _(this).mixture = new KemycalMixture(_(this).testtube.getAttribute(KEMYSTRY_DATATAG_NAME));
-            for (var kemycal in _(this).mixture.Kemycals) {
-                var kemycalInst = _(this).mixture.Kemycals[kemycal];
-                _(kemycalInst).tube = this;
-                if (_(kemycalInst).properties.intensive.hasOwnProperty('react_on')) {
-                    for (var event in _(kemycalInst).properties.intensive.react_on) {
-                        var eventName = _(kemycalInst).properties.intensive.react_on[event];
-                        (function(tube, kemycal, event) {
-                            tube.addEventListener(event, function() {
-                                kemycal.react(event)
-                            })
-                        })(_(this).testtube, kemycalInst, eventName)
-                    }
+
+        function Beaker(kemycalProperties) {
+            if (typeof kemycalProperties == 'object') {
+                var beaker = Lab.Workspace.Beakers[kemycalProperties.symbol.toLowerCase()] = new Kemycal(kemycalProperties);
+                return this;
+            } else {
+                if (kemycalProperties && Lab.Workspace.Beakers.hasOwnProperty(kemycalProperties.toLowerCase())) {
+                    return {
+                        prep: function(extProps) {
+                            Lab.Workspace.Beakers[kemycalProperties.toLowerCase()].prep(extProps);
+                            return this;
+                        }
+                    };
                 }
             }
         }
-        TestTube.prototype = {
-            mixture: function() {
-                var _ = myself._secretLab();
-                return _(this).mixture;
+        /**
+         * Tube is a DOM element that has the DATATAG attribute.
+         */
+        function Tube(el) {
+            this.element = el;
+            this.mixture = new KemycalMixture(this.element.getAttribute(KEMYSTRY_DATATAG_NAME));
+            for (var kemycal in this.mixture.Kemycals) {
+                var kemycalInst = this.mixture.Kemycals[kemycal];
+                kemycalInst.tube = this;
+            }
+        }
+        Tube.prototype = {
+            getMixture: function() {
+                return this.mixture;
             },
             updateFormula: function() {
-                var _ = myself._secretLab();
-                _(this).testtube.setAttribute(KEMYSTRY_DATATAG_NAME, myself.Deriver.underive(_(this).mixture.Kemycals));
+                this.element.setAttribute(KEMYSTRY_DATATAG_NAME, Lab.Util.Deriver.underive(this.mixture.Kemycals));
                 return this;
             },
             content: function(contentValue) {
-                var _ = myself._secretLab();
                 if (contentValue) {
-                    _(this).testtube.innerHTML = contentValue;
+                    this.element.innerHTML = contentValue;
                     return this;
                 }
-                return _(this).testtube.innerHTML;
+                return this.element.innerHTML;
             },
             sell: function() {
-                var _ = myself._secretLab();
                 if (typeof $ != 'undefined') {
-                    return $(_(this).testtube);
+                    return $(this.element);
                 }
                 if (typeof jQuery != 'undefined') {
-                    return jQuery(_(this).testtube);
+                    return jQuery(this.element);
                 }
                 if (typeof window.jQuery != 'undefined') {
-                    return window.jQuery(_(this).testtube);
+                    return window.jQuery(this.element);
                 }
                 return null; // Sorry, no one is buying
-            }
+            },
+            examine: function(event, callback) {
+                if (document.addEventListener) {
+                    this.element.addEventListener(event, callback, false);
+                } else if (document.attachEvent) {
+                    this.element.attachEvent("on" + event, callback);
+                } else {
+                    this.element["on" + event] = callback;
+                }
+            },
+            unexamine: function(event, callback) {
+                if (document.removeEventListener) {
+                    this.element.removeEventListener(event, callback, false);
+                } else if (document.detachEvent) {
+                    this.element.detachEvent("on" + event, callback);
+                } else {
+                    this.element["on" + event] = null;
+                }
+            },
         };
         /**
          * Kemycals are like plugins. They have special properties and abilities to do a variety of things.
          */
         function Kemycal(kemycalProperties) {
-            var _ = myself._secretLab();
-            _(this).properties = {};
-            kemycalPropertiesSetter = {};
-            if (kemycalProperties.hasOwnProperty('intensive') && kemycalProperties.hasOwnProperty('extensive')) {
-                _(this).properties = kemycalProperties;
-                return this;
+            this._labId = Lab.Util.Label();
+            this.intensive = {
+                symbol: ''
+            };
+            this.extensive = {};
+            this.procedures = {};
+            if (kemycalProperties.hasOwnProperty('intensive')) {
+                this.intensive = kemycalProperties.intensive;
             }
-            kemycalProperties[KEMYCAL_PROPERTY_TAG_NAME] = kemycalProperties[KEMYCAL_PROPERTY_TAG_NAME].toLowerCase();
-            kemycalPropertiesSetter.intensive = kemycalProperties;
-            kemycalPropertiesSetter.extensive = {};
-            if (kemycalPropertiesSetter.intensive.hasOwnProperty('extensive')) {
-                kemycalPropertiesSetter.extensive = kemycalPropertiesSetter.intensive['extensive'];
-                delete kemycalPropertiesSetter['intensive'].extensive;
+            if (kemycalProperties.hasOwnProperty('react_on')) {
+                this.intensive.react_on = kemycalProperties.react_on;
             }
-            _(this).properties = kemycalPropertiesSetter;
+            if (kemycalProperties.hasOwnProperty('extensive')) {
+                this.extensive = kemycalProperties.extensive;
+            }
+            if (kemycalProperties.hasOwnProperty('procedures')) {
+                this.procedures = kemycalProperties.procedures;
+            }
+            if (kemycalProperties.hasOwnProperty('symbol')) {
+                this.intensive.symbol = kemycalProperties.symbol.toLowerCase();
+            }
+
             return this;
         }
         Kemycal.prototype = {
             prep: function(userExtensive) {
-                var _ = myself._secretLab();
                 mergeExtensive = function(destination, source) {
                     for (var property in source) {
                         if (source[property] && source[property].constructor && source[property].constructor === Object) {
@@ -183,124 +170,103 @@
                     }
                     return destination;
                 };
-                if (_(this).properties.intensive.hasOwnProperty('user_extensive')) {
-                    if (_(this).properties.intensive.user_extensive != false) {
-                        mergeExtensive(this.extensive(), userExtensive);
-                    }
-                } else {
-                    mergeExtensive(this.extensive(), userExtensive);
+                if (!(this.intensive.hasOwnProperty('user_extensive') && this.intensive.user_extensive == false)) {
+                    mergeExtensive(this.extensive, userExtensive);
                 }
-                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty('prep')) {
-                    Kemystry.open();
-                    _(this).properties.intensive.procedures.prep.apply(this, arguments);
+                if (this.hasOwnProperty('procedures') && this.procedures.hasOwnProperty('prep')) {
+                    this.procedures.prep.apply(this, arguments);
                 }
                 return this;
             },
             act: function() {
-                var _ = myself._secretLab();
-                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty('act')) {
-                    _(this).properties.intensive.procedures.act.apply(this, arguments);
+                if (this.hasOwnProperty('procedures') && this.procedures.hasOwnProperty('act')) {
+                    this.procedures.act.apply(this, arguments);
                 }
                 return this;
             },
             react: function() {
-                var _ = myself._secretLab();
-                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty('react')) {
-                    _(this).properties.intensive.procedures.react.apply(this, arguments);
+                if (this.hasOwnProperty('procedures') && this.procedures.hasOwnProperty('react')) {
+                    this.procedures.react.apply(this, arguments);
                 }
                 return this;
             },
             symbol: function() {
-                var _ = myself._secretLab();
-                return _(this).properties.intensive.symbol;
+                return this.intensive.symbol;
             },
             state: function(kemycalState) {
-                var _ = myself._secretLab();
                 if (kemycalState) {
-                    _(this).state = kemycalState;
-                    if (_(this).hasOwnProperty('tube')) {
-                        _(this).tube.updateFormula();
+                    this.intensive.state = kemycalState;
+                    if (this.hasOwnProperty('tube')) {
+                        this.tube.updateFormula();
                     }
                     return this;
                 }
-                return _(this).state;
+                return this.intensive.state;
             },
-            extensive: function(propKey, propValue) {
-                var _ = myself._secretLab();
+            ext: function(propKey, propValue) {
                 if (propKey) {
                     if (typeof propKey == 'object') {
                         for (var propertyName in propKey) {
-                            _(this).properties.extensive(propertyName, propKey[propertyName]);
+                            this.ext(propertyName, propKey[propertyName]);
                         }
-                        return _(this).properties.extensive;
+                        return this.extensive;
                     } else {
                         if (propValue) {
-                            _(this).properties.extensive[propKey] = propValue;
-                            return _(this).properties.extensive[propKey];
+                            return Lab.Util._(this.extensive).getByDot(propKey,propValue);
                         }
-                        return _(this).properties.extensive[propKey];
+                        return Lab.Util._(this.extensive).getByDot(propKey);
                     }
                 }
-                return _(this).properties.extensive;
+                return this.extensive;
             },
-            physical: function(style, state) {
-                var _ = myself._secretLab();
+            phys: function(style, state) {
                 if (state == undefined) {
-                    state = myself.Deriver.underiveState(this.state());
+                    state = Lab.Util.Deriver.underiveState(this.state());
                 }
                 if (state instanceof Array) {
-                    state = myself.Deriver.underiveState(state);
+                    state = Lab.Util.Deriver.underiveState(state);
                 }
-                myself._addPhysicalProperties(this.symbol(), state, style);
-                myself._setCSS();
+                Lab.Util.PhysicalCSS.add(this.symbol(), state, style);
+                Lab.Util.PhysicalCSS.update();
                 return this;
             },
             content: function(content) {
-                var _ = myself._secretLab();
-                _(this).tube.content(content);
+                this.tube.content(content);
                 return this;
             },
             tube: function() {
-                var _ = myself._secretLab();
-                return _(this).tube;
+                return this.tube;
             },
-            getAllTubes: function() {
-                var _ = myself._secretLab();
-                if (Object.keys(myself._kit.tubes).length == 0) {
-                    myself._kit.tubes = myself._findAllTestTubes();
+            getTubes: function() {
+                if (Lab.Workspace.Tubes.size() == 0) {
+                    Lab.Workspace.Tubes = Lab.Util.Gather.Tubes.all();
                 }
-                var all = myself._findTestTubesByKemycal(this.symbol());
+                var all = Lab.Util.Gather.Tubes.byKemycal(this.symbol());
                 return all;
             },
             getAll: function() {
-                var _ = myself._secretLab();
-                if (Object.keys(myself._kit.tubes).length == 0) {
-                    myself._kit.tubes = myself._findAllTestTubes();
-                }
-                var all = myself._findAllKemycalsBySymbol(this.symbol());
+                Lab.Util.Gather.Tubes.all();
+                var all = Lab.Util.Gather.Kemycals.bySymbol(this.symbol());
                 return all;
             },
             getOthers: function() {
-                var _ = myself._secretLab();
-                var others = myself._findAllKemycalsBySymbol(this.symbol());
+                var others = Lab.Util.Gather.Kemycals.bySymbol(this.symbol());
                 for (var kemycal in others.Kemycals) {
-                    if (others.Kemycals[kemycal].__labId == this.__labId) {
+                    if (others.Kemycals[kemycal]._labId == this._labId) {
                         others.Kemycals.splice(kemycal, 1);
                     }
                 }
                 return others;
             },
             sell: function() {
-                var _ = myself._secretLab();
                 if (typeof $ != 'undefined') {
                     return this.tube().sell();
                 }
                 return 'Sorry, You Need Money.';
             },
-            procedure: function(procedureId) {
-                var _ = myself._secretLab();
-                if (_(this).properties.intensive.hasOwnProperty('procedures') && _(this).properties.intensive.procedures.hasOwnProperty(procedureId)) {
-                    return _(this).properties.intensive.procedures[procedureId].apply(this, arguments);
+            proc: function(procedureId) {
+                if (this.hasOwnProperty('procedures') && this.procedures.hasOwnProperty(procedureId)) {
+                    return this.procedures[procedureId].apply(this, arguments);
                 }
             },
         };
@@ -309,38 +275,23 @@
          */
         function KemycalMixture(kemycalFormula) {
             if (kemycalFormula instanceof Array) {
-                var mixtureKemycals = [];
+                var mixedKemycals = [];
                 for (var kemycal in kemycalFormula) {
-                    mixtureKemycals.push(kemycalFormula[kemycal]);
+                    mixedKemycals.push(kemycalFormula[kemycal]);
                 }
             } else {
-                var mixtureKemycals = {};
-                var derivedFormula = myself.Deriver.derive(kemycalFormula);
-                var formulaSymbols = [];
-                for (var symbol in derivedFormula) formulaSymbols.push(symbol.toLowerCase());
-                for (var i = 0, kemycalSymbol; kemycalSymbol = formulaSymbols[i]; i++) {
+                var mixedKemycals = {};
+                var derivedFormula = Lab.Util.Deriver.derive(kemycalFormula);
+                for (var kemycalSymbol in derivedFormula) {
                     var pipette = Pipette(kemycalSymbol);
                     if (pipette != false) {
-                        mixtureKemycals[kemycalSymbol] = pipette;
-                        mixtureKemycals[kemycalSymbol].state(derivedFormula[kemycalSymbol]);
+                        mixedKemycals[kemycalSymbol] = pipette;
+                        mixedKemycals[kemycalSymbol].state(derivedFormula[kemycalSymbol]);
                     }
                 }
             }
-            this.Kemycals = mixtureKemycals;
-            var iteratedProcedures = [],
-                mythis = this;
-
-            function getIteratedProc(proc) {
-                return function() {
-                    for (var j = 0, kemycal; kemycal = mythis.Kemycals[j]; j++) {
-                        kemycal[proc].apply(kemycal, arguments);
-                    }
-                    return mythis;
-                };
-            };
-            for (var i = 0, procedure; procedure = iteratedProcedures[i]; i++) {
-                this[procedure] = getIteratedProc(procedure);
-            }
+            this.Kemycals = mixedKemycals;
+            return this;
         }
         KemycalMixture.prototype = {
             each: function(proc) {
@@ -359,8 +310,6 @@
          * Pipette makes a new Kemycal Instance from the base properties defined by the Beaker.
          */
         function Pipette(kemycalSymbol) {
-            var _ = myself._secretLab();
-
             function takeProperties(obj) {
                 var copy;
                 // Handle the 2 simple types, and null or undefined
@@ -383,45 +332,31 @@
                 }
                 throw new Error("Unable to copy obj! Its type isn't supported.");
             }
-            if (myself._kit.beakers.hasOwnProperty(kemycalSymbol)) {
-                var kemycalSource = myself._kit.beakers[kemycalSymbol];
+            if (Lab.Workspace.Beakers.hasOwnProperty(kemycalSymbol)) {
+                var kemycalSource = Lab.Workspace.Beakers[kemycalSymbol];
                 if (null == kemycalSource || "object" != typeof kemycalSource) return;
                 // using takeProperties prevents copy by referance
-                var kemycalSourceProperties = takeProperties(_(kemycalSource).properties);
+                var kemycalSourceProperties = takeProperties(kemycalSource);
                 var kemycalDrop = new Kemycal(kemycalSourceProperties);
                 return kemycalDrop;
             }
             return false;
         }
         /**
-         * TestTubeRack is an array of TestTube Instances
+         * TubeRack is an array of Tube Instances
          */
-        function TestTubeRack(els) {
-            var TestTubeElements = [];
+        function TubeRack(els) {
+            var TubeElements = [];
             for (var i = 0, el; el = els[i]; i++) {
-                if (el instanceof TestTube) {
-                    TestTubeElements.push(el);
+                if (el instanceof Tube) {
+                    TubeElements.push(el);
                 } else {
-                    TestTubeElements.push(new TestTube(el));
+                    TubeElements.push(new Tube(el));
                 }
             }
-            this.Rack = TestTubeElements;
-            var iteratedProcedures = [],
-                mythis = this;
-
-            function getIteratedProc(proc) {
-                return function() {
-                    for (var j = 0, tube; tube = mythis.Rack[j]; j++) {
-                        tube[proc].apply(tube, arguments);
-                    }
-                    return mythis;
-                };
-            };
-            for (var i = 0, procedure; procedure = iteratedProcedures[i]; i++) {
-                this[procedure] = getIteratedProc(procedure);
-            }
+            this.Rack = TubeElements;
         }
-        TestTubeRack.prototype = {
+        TubeRack.prototype = {
             each: function(proc) {
                 for (var i = 0, tube; tube = this.Rack[i]; i++) {
                     proc(tube);
@@ -430,6 +365,16 @@
             get: function(offset) {
                 return this.Rack[offset];
             },
+            byKemycal: function(symbol) {
+                var tubesByKemycal = [];
+                for (var tube in this.Rack) {
+                    var mixture = this.Rack[tube].getMixture();
+                    if (mixture.Kemycals.hasOwnProperty(kemycalSymbol)) {
+                        tubesByKemycal.push(this.Rack[tube]);
+                    }
+                }
+                return new TubeRack(tubesByKemycal);
+            },
             size: function() {
                 return Object.keys(this.Rack).length;
             }
@@ -437,176 +382,261 @@
         /********************************************************
          * Private Methods and Vars
          ********************************************************/
-        var myself = {};
-        myself._kit = {
-            beakers: {},
-            tubes: {},
-            physical_properties: {},
-            opened: false
+        var Lab = {
+            Workspace: {
+                Beakers: {},
+                Kemycals: {},
+                Tubes: {},
+                Physical: {},
+            }
         };
-        myself._secretLabStorage = {};
-        myself._secretLabSeen = {};
-        myself._secretLab = function(key) {
-            var store = myself._secretLabStorage;
-            var seen = myself._secretLabSeen;
-            return function(key) {
-                if (typeof key != 'object') return;
-                if (!key.hasOwnProperty('__labId')) {
-                    key.__labId = myself._makeLabId();
+        Lab.Util = {
+            Label: function() {
+                var dateObject = new Date();
+                var uniqueId = (Math.random() * dateObject.getTime()).toString(36).substring(9);
+                return uniqueId;
+            },
+            Gather: {
+                Tubes: {
+                    all: function() {
+                        Lab.Workspace.Tubes = new TubeRack(document.querySelectorAll('[' + KEMYSTRY_DATATAG_NAME + ']'));
+                        return Lab.Workspace.Tubes;
+                    },
+                    byKemycal: function(kemycalSymbol) {
+                        var allTubes = Lab.Util.Gather.Tubes.all();
+                        var tubesByKemycal = [];
+                        for (var tube in allTubes.Rack) {
+                            var mixture = allTubes.Rack[tube].getMixture();
+                            if (mixture.Kemycals.hasOwnProperty(kemycalSymbol)) {
+                                tubesByKemycal.push(allTubes.Rack[tube]);
+                            }
+                        }
+                        return new TubeRack(tubesByKemycal);
+                    }
+                },
+                Kemycals: {
+                    all: function() {
+                        var allTubes = Lab.Util.Gather.Tubes.all();
+                        var allKemycals = [];
+                        for (var tube in allTubes.Rack) {
+                            var mixture = allTubes.Rack[tube].getMixture();
+                            mixture.each(function(kemycal) {
+                                allKemycals.push(kemycal);
+                            }.bind(allKemycals));
+                        }
+                        return new KemycalMixture(allKemycals);
+                    },
+                    bySymbol: function(kemycalSymbol) {
+                        var testTubesByKemycal = Lab.Util.Gather.Tubes.byKemycal(kemycalSymbol);
+                        var kemycalsBySymbol = [];
+                        for (var tube in testTubesByKemycal.Rack) {
+                            var mixture = testTubesByKemycal.Rack[tube].getMixture();
+                            if (mixture.Kemycals.hasOwnProperty(kemycalSymbol)) {
+                                kemycalsBySymbol.push(mixture.Kemycals[kemycalSymbol]);
+                            }
+                        }
+                        return new KemycalMixture(kemycalsBySymbol);
+                    }
                 }
-                key = key.__labId;
-                var value = store[key];
-                if (!value) {
-                    if (seen.hasOwnProperty(key)) {
-                        value = key;
+            },
+        
+            PhysicalCSS: {
+                setup: function() {
+                    var kemystryStyleTag = document.getElementById('kemystry-kemycals-physical-props');
+                    if (kemystryStyleTag == null) {
+                        head = document.head || document.getElementsByTagName('head')[0] || document.body || document.getElementsByTagName('body')[0];
+                        var kemystryStyleTag = document.createElement('style');
+                        kemystryStyleTag.id = 'kemystry-kemycals-physical-props';
+                        kemystryStyleTag.type = 'text/css';
+                        head.appendChild(kemystryStyleTag);
+                    }
+                    Lab.Util.PhysicalCSS.update();
+                },
+                add: function(symbol, state, style) {
+                    if (!Lab.Workspace.Physical[symbol]) {
+                        Lab.Workspace.Physical[symbol] = {};
+                    }
+                    Lab.Workspace.Physical[symbol][state] = style;
+                },
+                update: function() {
+                    var kemystryStyleTag = document.getElementById('kemystry-kemycals-physical-props');
+                    if (kemystryStyleTag != null) {
+                        kemystryStyleTag.innerHTML = Lab.Util.PhysicalCSS.get();
                     } else {
-                        value = Object.create(Object.prototype);
-                        store[key] = value;
-                        seen[value] = true;
+                        Lab.Util.PhysicalCSS.setup();
+                    }
+                },
+                get: function() {
+                    return Lab.Util.PhysicalCSS.make.css();
+                },
+                make: {
+                    attr: function(name, value) {
+                        if (value == 'base') {}
+                        return name + ': ' + value + ';\n';
+                    },
+                    attrs: function(object) {
+                        cssAttrString = '';
+                        for (var cssProp in object) {
+                            cssAttrString += "\t" + Lab.Util.PhysicalCSS.make.attr(cssProp, object[cssProp]); //attr + ': ' + object[attr] + ';\n';
+                        }
+                        return cssAttrString;
+                    },
+                    css: function() {
+                        var css = '';
+                        for (var kemycalSymbol in Lab.Workspace.Physical) {
+                            for (var kemycalState in Lab.Workspace.Physical[kemycalSymbol]) {
+                                if (kemycalState == 'base') {
+                                    css += '[data-kemy*=\"' + kemycalSymbol + ':\"] {\n' + Lab.Util.PhysicalCSS.make.attrs(Lab.Workspace.Physical[kemycalSymbol][kemycalState]) + "}\n";
+                                } else {
+                                    css += '[data-kemy*="' + kemycalSymbol + ':' + kemycalState + '"] {\n' + Lab.Util.PhysicalCSS.make.attrs(Lab.Workspace.Physical[kemycalSymbol][kemycalState]) + "}\n";
+                                }
+                            }
+                        }
+                        return css;
                     }
                 }
-                return value;
-            };
-        };
-        myself._findAllTestTubes = function() {
-            var kemystrySetDataTagName = '[' + KEMYSTRY_DATATAG_NAME + ']';
-            this._kit.tubes = new TestTubeRack(Kemystry.workArea.querySelectorAll(kemystrySetDataTagName));
-            return this._kit.tubes;
-        };
-        myself._findTestTubesByKemycal = function(kemycalSymbol) {
-            var tubes = [];
-            for (var tube in myself._kit.tubes.Rack) {
-                var mixture = myself._kit.tubes.Rack[tube].mixture();
-                if (mixture.Kemycals.hasOwnProperty(kemycalSymbol)) {
-                    tubes.push(myself._kit.tubes.Rack[tube]);
-                }
-            }
-            return new TestTubeRack(tubes);
-        };
-        myself._findAllKemycalsBySymbol = function(kemycalSymbol) {
-            var tubes = myself._findTestTubesByKemycal(kemycalSymbol);
-            var kemycals = [];
-            for (var tube in tubes.Rack) {
-                var mixture = myself._kit.tubes.Rack[tube].mixture();
-                if (mixture.Kemycals.hasOwnProperty(kemycalSymbol)) {
-                    kemycals.push(mixture.Kemycals[kemycalSymbol]);
-                }
-            }
-            return new KemycalMixture(kemycals);
-        };
-        myself._makeLabId = function() {
-            var dateObject = new Date();
-            var uniqueId = (Math.random() * dateObject.getTime()).toString(36).substring(9);
-            return uniqueId;
-        };
-        myself._addPhysicalProperties = function(symbol, state, style) {
-            if (!myself._kit.physical_properties[symbol]) {
-                myself._kit.physical_properties[symbol] = {};
-            }
-            myself._kit.physical_properties[symbol][state] = style;
-        };
-        myself._getCSS = function() {
-            var css = '';
-            for (var prop in myself._kit.physical_properties) {
-                for (var val in myself._kit.physical_properties[prop]) {
-                    if (val == 'base') {
-                        css += '[data-kemy*=\"' + prop + ':\"] {\n' + myself._toCSSAttributes(myself._kit.physical_properties[prop][val]) + "}\n";
+            },
+            Deriver: {
+                derive: function(kemycalFormula) {
+                    return this.deriveFormula(kemycalFormula);
+                },
+                deriveFormula: function(formula) {
+                    var derivedFormula = [],
+                        definitionCollection,
+                        derivedKemycal;
+                    var kemycalCollection = formula.split(KEMYCAL_SEPARATOR);
+                    var size = kemycalCollection.length,
+                        i = 0;
+                    for (i; i < size; i++) {
+                        derivedKemycal = this.deriveKemycal(kemycalCollection[i]);
+                        derivedFormula[derivedKemycal.symbol] = derivedKemycal.state;
+                        // Try to solve multiple of same kemycal in one formula
+                        //derivedFormula.push([derivedKemycal.symbol,derivedKemycal.state]);
+                    }
+                    return derivedFormula;
+                },
+                deriveKemycal: function(kemycal) {
+                    var derivedKemycal = {},
+                        kemycalBody,
+                        kemycalSymbol,
+                        kemycalState;
+                    kemycalBody = kemycal.split(KEMYCAL_KEY_VALUE_SEPARATOR);
+                    kemycalSymbol = kemycalBody[0].trim().toLowerCase();
+                    kemycalState = this.deriveState(kemycalBody[1].trim());
+                    derivedKemycal.symbol = kemycalSymbol;
+                    derivedKemycal.state = kemycalState;
+                    return derivedKemycal;
+                },
+                deriveState: function(state) {
+                    var derivedState = state.split(',');
+                    if (derivedState instanceof Array) {
+                        if (derivedState.length == 1) {
+                            derivedState = derivedState[0];
+                        }
+                    }
+                    return derivedState;
+                },
+                underive: function(kemycalDerivedFormula) {
+                    return this.underiveFormula(kemycalDerivedFormula);
+                },
+                underiveFormula: function(kemycalDerivedFormula) {
+                    var underivedFormula,
+                        underivedKemycal;
+                    underivedKemycal = this.underiveKemycal(kemycalDerivedFormula);
+                    underivedFormula = underivedKemycal.join(' ');
+                    return underivedFormula;
+                },
+                underiveKemycal: function(kemycalDerivedKemycal) {
+                    var underivedKemycal = [];
+                    for (var kemycal in kemycalDerivedKemycal) {
+                        if (!kemycalDerivedKemycal.hasOwnProperty(kemycal)) continue;
+                        underivedKemycal.push(kemycal + KEMYCAL_KEY_VALUE_SEPARATOR + this.underiveState(kemycalDerivedKemycal[kemycal].state()));
+                    }
+                    return underivedKemycal;
+                },
+                underiveState: function(kemycalDerivedState) {
+                    if (kemycalDerivedState instanceof Array) {
+                        underivedState = kemycalDerivedState.join(',');
                     } else {
-                        css += '[data-kemy*="' + prop + ':' + val + '"] {\n' + myself._toCSSAttributes(myself._kit.physical_properties[prop][val]) + "}\n";
+                        underivedState = kemycalDerivedState;
                     }
+                    return underivedState;
                 }
-            }
-            return css;
-        };
-        myself._setCSS = function() {
-            var css = myself._getCSS();
-            var kemycalPhysicalProperties = document.getElementById('kemycal_physical_properties');
-            if (kemycalPhysicalProperties != null) {
-                kemycalPhysicalProperties.innerHTML = css;
-            }
-            return css;
-        };
-        myself._toCSS = function(name, value) {
-            if (value == 'base') {}
-            return name + ': ' + value + ';\n';
-        };
-        myself._toCSSAttributes = function(object) {
-            cssAttrString = '';
-            for (var attr in object) {
-                cssAttrString += "\t" + attr + ': ' + object[attr] + ';\n';
-            }
-            return cssAttrString;
-        };
-        myself.Deriver = {
-            derive: function(kemycalFormula) {
-                return this.deriveFormula(kemycalFormula);
             },
-            deriveFormula: function(formula) {
-                var derivedFormula = [],
-                    definitionCollection,
-                    derivedKemycal;
-                var kemycalCollection = formula.split(KEMYCAL_SEPARATOR);
-                var size = kemycalCollection.length,
-                    i = 0;
-                for (i; i < size; i++) {
-                    derivedKemycal = this.deriveKemycal(kemycalCollection[i]);
-                    derivedFormula[derivedKemycal.symbol] = derivedKemycal.state;
-                    // Try to solve multiple of same kemycal in one formula
-                    //derivedFormula.push([derivedKemycal.symbol,derivedKemycal.state]);
-                }
-                return derivedFormula;
-            },
-            deriveKemycal: function(kemycal) {
-                var derivedKemycal = {},
-                    kemycalBody,
-                    kemycalSymbol,
-                    kemycalState;
-                kemycalBody = kemycal.split(KEMYCAL_KEY_VALUE_SEPARATOR);
-                kemycalSymbol = kemycalBody[0].trim().toLowerCase();
-                kemycalState = this.deriveState(kemycalBody[1].trim());
-                derivedKemycal.symbol = kemycalSymbol;
-                derivedKemycal.state = kemycalState;
-                return derivedKemycal;
-            },
-            deriveState: function(state) {
-                var derivedState = state.split(',');
-                if (derivedState instanceof Array) {
-                    if (derivedState.length == 1) {
-                        derivedState = derivedState[0];
+            _: function() {
+                var args = arguments[0];
+                return {
+                    contains: function(search) {
+                        var checkThis = args[0];
+                        switch (typeof checkThis) {
+                            case 'object':
+                                if (Object.prototype.toString.call(checkThis) == '[object Array]') {
+                                    var i = checkThis.length;
+                                    while (i--) {
+                                        if (checkThis[i] === search) {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                }
+                                if (checkThis instanceof Tube) {
+                                    if (typeof search == 'string') {
+                                        return (checkThis.mixture.Kemycals.hasOwnProperty(search) ? true : false);
+                                    } else {
+                                        if (search.hasOwnProperty('intensive')) {
+                                            return (checkThis.mixture.Kemycals.hasOwnProperty(search.intensive.symbol) ? true : false);
+                                        }
+                                    }
+                                }
+                                return (checkThis.hasOwnProperty(search) ? true : false);
+                                break;
+                            case 'string':
+                                return checkThis.indexOf(search) !== -1;
+                                break;
+                        }
+                    },
+                    getByDot: function(desc, value) {
+                        var obj = args;
+                        var arr = desc ? desc.split(".") : [];
+                        while (arr.length && obj) {
+                            var comp = arr.shift();
+                            var match = new RegExp("(.+)\\[([0-9]*)\\]").exec(comp);
+                            // handle arrays
+                            if ((match !== null) && (match.length == 3)) {
+                                var arrayData = {
+                                    arrName: match[1],
+                                    arrIndex: match[2]
+                                };
+                                if (obj[arrayData.arrName] !== undefined) {
+                                    if (typeof value !== 'undefined' && arr.length === 0) {
+                                        obj[arrayData.arrName][arrayData.arrIndex] = value;
+                                    }
+                                    obj = obj[arrayData.arrName][arrayData.arrIndex];
+                                } else {
+                                    obj = undefined;
+                                }
+                                continue;
+                            }
+                            // handle regular things
+                            if (typeof value !== 'undefined') {
+                                if (obj[comp] === undefined) {
+                                    obj[comp] = {};
+                                }
+                                if (arr.length === 0) {
+                                    obj[comp] = value;
+                                }
+                            }
+                            obj = obj[comp];
+                        }
+                        return obj;
                     }
-                }
-                return derivedState;
+                };
             },
-            underive: function(kemycalDerivedFormula) {
-                return this.underiveFormula(kemycalDerivedFormula);
-            },
-            underiveFormula: function(kemycalDerivedFormula) {
-                var underivedFormula,
-                    underivedKemycal;
-                underivedKemycal = this.underiveKemycal(kemycalDerivedFormula);
-                underivedFormula = underivedKemycal.join(' ');
-                return underivedFormula;
-            },
-            underiveKemycal: function(kemycalDerivedKemycal) {
-                var underivedKemycal = [];
-                for (var kemycal in kemycalDerivedKemycal) {
-                    if (!kemycalDerivedKemycal.hasOwnProperty(kemycal)) continue;
-                    underivedKemycal.push(kemycal + KEMYCAL_KEY_VALUE_SEPARATOR + this.underiveState(kemycalDerivedKemycal[kemycal].state()));
-                }
-                return underivedKemycal;
-            },
-            underiveState: function(kemycalDerivedState) {
-                if (kemycalDerivedState instanceof Array) {
-                    underivedState = kemycalDerivedState.join(',');
-                } else {
-                    underivedState = kemycalDerivedState;
-                }
-                return underivedState;
-            }
         };
+        Kemystry.Lab = Lab;
         return Kemystry;
     }(Kemystry || {}));
-    document.addEventListener('DOMContentLoaded', Kemystry.open);
+    Kemystry.open();
     document.addEventListener('DOMContentLoaded', Kemystry.setup);
     if (typeof define === "function" && define.amd) {
         define("kemystry", [], function() {

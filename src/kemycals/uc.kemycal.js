@@ -31,8 +31,8 @@ Kemystry.beaker({
             var property =
             var amount = '';
             if (state instanceof Array) {
-                if (this.extensive().utility.hasOwnProperty(state[0])) {
-                    property += this.extensive(state[0]);
+                if (this.ext('utility').hasOwnProperty(state[0])) {
+                    property += this.ext(state[0]);
                 }
                 if (state.hasOwnProperty(1)) {
                     amount = state[1];
@@ -41,7 +41,7 @@ Kemystry.beaker({
                 amount = state;
             }
             physicalObj[property] = amount;
-            this.physical(physicalObj);
+            this.phys(physicalObj);
         }
     }
 });
