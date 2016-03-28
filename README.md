@@ -1,9 +1,9 @@
 # KemystryJS
 
-KemystryJS is a different kind of library. It is 
+KemystryJS is a different kind of library.
 
 ## Getting Started
-
+Its actually quite hard to explain... I will write something later.
 
 ## Advantages
 
@@ -79,11 +79,11 @@ Kemystry was based on a pun of *chemisty* mixed with *Kemy*, from [We Are Kemy](
 > 
 > *ex.* data-kemy="`trig:key,act uc:p,t,20 size:1/2`"
 
-**TestTube**: 
-> A `TestTube` is a dom element with a `KemystryJS` `Formula` attached to it. These usually have a `KemycalMixture` associated with it.
+**Tube**: 
+> A `Tube` is a dom element with a `KemystryJS` `Formula` attached to it. These usually have a `KemycalMixture` associated with it.
 
-**TestTubeRack**:
-> A collection of `TestTube`s that you can execute special methods on.
+**TubeRack**:
+> A collection of `Tube`s that you can execute special methods on.
 
 
 ## License
