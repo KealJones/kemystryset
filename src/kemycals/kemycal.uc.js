@@ -1,5 +1,9 @@
 Kemystry.beaker({
     // Simple Kemycal for Dynamic Utility Classes
+    // Usage: 
+    // uc:(what),(where),(amount) 
+    // You can omit where to assume all - uc:(what),(amount) 
+    // Add 20px of Padding to top - uc:p,t,20
     symbol: 'uc',
     extensive: {
         'preset': {
@@ -42,6 +46,9 @@ Kemystry.beaker({
             }
             physicalObj[property] = amount;
             this.phys(physicalObj);
+        },
+        getState: function() {
+
         }
     }
 });

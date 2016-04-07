@@ -1,5 +1,5 @@
 Kemystry.beaker({
-    // Simple Kemycal for Quick Click Toggles
+    // Kemycal for Quick Click Toggles
     symbol: 'trig',
     react_on: ['click'],
     extensive: {
