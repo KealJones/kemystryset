@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>KemystryJS by KealJones</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">KemystryJS</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/KealJones/KemystryJS" class="btn">View on GitHub</a>
+      <a href="https://github.com/KealJones/KemystryJS/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/KealJones/KemystryJS/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="kemystryjs" class="anchor" href="#kemystryjs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>KemystryJS</h1>
+
+<p>KemystryJS is a different kind of library.</p>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<p>Its actually quite hard to explain... I will write something later.</p>
+
+<h2>
+<a id="advantages" class="anchor" href="#advantages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Advantages</h2>
+
+<ul>
+<li>Easy to use for everyone.</li>
+<li>Easy to extend and build kemycals.</li>
+<li>There is <em>no need</em> for <em>third party</em> libraries.</li>
+<li>No extra functionality that you don't use or need.</li>
+<li>Increases you're speed of development.</li>
+<li>Gives developers an easy way to quikly build reusable kemycals.</li>
+<li>Gives users an easy way to quikly add lots of functionality with no javascript coding.</li>
+</ul>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<h5>
+<a id="include-kemystryjs" class="anchor" href="#include-kemystryjs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Include <em>KemystryJS</em>.</h5>
+
+<div class="highlight highlight-text-html-basic"><pre><span class="pl-s1">    &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>kemystry.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span></pre></div>
+
+<h5>
+<a id="add-the-kemycals-that-you-want-to-utilize-on-the-page" class="anchor" href="#add-the-kemycals-that-you-want-to-utilize-on-the-page" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Add the <em>kemycals</em> that you want to utilize on the page.</h5>
+
+<div class="highlight highlight-text-html-basic"><pre><span class="pl-s1">    &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>kemystry.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s1">    &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>trig.keymcal.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span> <span class="pl-c">&lt;!-- A simple toggle keymcal --&gt;</span></pre></div>
+
+<h5>
+<a id="start-doing-kemystry-by-adding-the-data-kemy-attribute-to-any-html-element" class="anchor" href="#start-doing-kemystry-by-adding-the-data-kemy-attribute-to-any-html-element" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Start doing Kemystry by adding the data-kemy attribute to any HTML element.</h5>
+
+<div class="highlight highlight-text-html-basic"><pre>    &lt;<span class="pl-ent">body</span>&gt;
+        &lt;<span class="pl-ent">div</span> <span class="pl-e">data-kemy</span>=<span class="pl-s"><span class="pl-pds">"</span>trig:clicky,show<span class="pl-pds">"</span></span>&gt;
+            When you click the button I appear! Click it again and I disappear!
+        &lt;/<span class="pl-ent">div</span>&gt;
+        &lt;<span class="pl-ent">button</span> <span class="pl-e">data-kemy</span>=<span class="pl-s"><span class="pl-pds">"</span>trig:clicky,toggle<span class="pl-pds">"</span></span>&gt;
+            Click Me!
+        &lt;/<span class="pl-ent">button</span>&gt;
+<span class="pl-s1">        &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>kemystry.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+<span class="pl-s1">        &lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>trig.keymcal.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</span>
+    &lt;/<span class="pl-ent">body</span>&gt;</pre></div>
+
+<h2>
+<a id="glossary" class="anchor" href="#glossary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Glossary</h2>
+
+<p>These are just brief descriptions about terms associtated with KemystryJS. For extended documentation see: <a href="http://wearekemy.com">Full KemystryJS Documentation</a>. </p>
+
+<p>Kemystry was based on a pun of <em>chemisty</em> mixed with <em>Kemy</em>, from <a href="http://wearekemy.com">We Are Kemy</a>. With that the core idea of KemystryJS lended itself to many of the terms and methods set forth in real chemistry... hehe ... If you know about chemistry hopefully alot of these terms actually make it easier to use.</p>
+
+<p><strong>Kemycal</strong>: </p>
+
+<blockquote>
+<p>A component/plugin/addon built for use with <code>KemystryJS</code>.</p>
+</blockquote>
+
+<p><strong>Symbol</strong>:</p>
+
+<blockquote>
+<p>The identifier of a <code>Kemycal</code>. Often used in a <code>Kemycal</code> <code>Formula</code>. </p>
+
+<p><em>ex.</em> data-kemy="<code>symbol</code>:state"</p>
+</blockquote>
+
+<p><strong>State</strong>: </p>
+
+<blockquote>
+<p>The phase or value of a <code>Kemycal</code> instance. </p>
+
+<p><em>ex.</em> data-kemy="symbol:<code>state</code>"</p>
+</blockquote>
+
+<p><strong>KemycalMixture</strong>:</p>
+
+<blockquote>
+<p>A collection of <code>Kemycal</code>s that you can execute special methods on.</p>
+</blockquote>
+
+<p><strong>Beaker</strong>: </p>
+
+<blockquote>
+<p><code>Beaker</code>s are used to create, prepare, and source properties for all <code>Kemycal</code> instances by defining things like the <code>Kemycal</code>'s' <code>Symbol</code>, <code>Extensive</code> Properties, <code>Intensive</code> Properties, <code>Procedures</code>, and more.</p>
+</blockquote>
+
+<p><strong>Extensive</strong>:</p>
+
+<blockquote>
+<p>These are <code>Kemycal</code> properties that can change based on user conditions or react <code>Procedures</code>.</p>
+</blockquote>
+
+<p><strong>Intensive</strong>:</p>
+
+<blockquote>
+<p>These are <code>Kemycal</code> properties that cannot be changed and are defined by the <code>Kemycal</code>.</p>
+</blockquote>
+
+<p><strong>Procedures</strong>:</p>
+
+<blockquote>
+<p>These are standard or custom operations/functions that can be executed as defined by the <code>Kemycal</code> instance.</p>
+</blockquote>
+
+<p><strong>Formula</strong>: </p>
+
+<blockquote>
+<p>A string of <code>Symbol</code>/<code>State</code> pairs. A <code>Formula</code> usually this refers to the contents of the <code>data-kemy</code> attribute but can be any string indicating <code>Symbol</code>/<code>State</code> pairs. </p>
+
+<p><em>ex.</em> data-kemy="<code>trig:key,act uc:p,t,20 size:1/2</code>"</p>
+</blockquote>
+
+<p><strong>Tube</strong>: </p>
+
+<blockquote>
+<p>A <code>Tube</code> is a dom element with a <code>KemystryJS</code> <code>Formula</code> attached to it. These usually have a <code>KemycalMixture</code> associated with it.</p>
+</blockquote>
+
+<p><strong>TubeRack</strong>:</p>
+
+<blockquote>
+<p>A collection of <code>Tube</code>s that you can execute special methods on.</p>
+</blockquote>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>The MIT License (MIT)</p>
+
+<p>Copyright © 2016 Keal Jones <a href="mailto:keal@wearekemy.com">keal@wearekemy.com</a></p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/KealJones/KemystryJS">KemystryJS</a> is maintained by <a href="https://github.com/KealJones">KealJones</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
