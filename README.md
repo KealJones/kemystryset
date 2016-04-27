@@ -1,9 +1,35 @@
 # KemystryJS
 
-KemystryJS is a different kind of library.
+KemystryJS is a library designed to make writing and using plugins fun and simple. 
 
-## Getting Started
-Its actually quite hard to explain... I will write something later.
+
+For Developers:
+
+It's an abstraction library that takes care of the boilerplate, so you can focus on what the plugin actually does.
+
+For Users:
+
+It's a simple way to add functionality to elements with minimal effort.
+
+
+## Introduction
+
+For Developers:
+The hardest part of building plugins is not the logic itself, it's the boring stuff; setting up event listeners, merging user configs, managing classes, handling "states", dispatching events, etc... 
+
+Furthermore, on the Web today, most plugins are released as "jQuery" plugins, dont get me wrong, jQuery is great, but why should I load all of jQuery if the only reason is a plugin. Most plugins regardless of if through jQuery or Standalone exist isolated from each other, which means they all repeat the same expensive tasks and are unable to work togeather. KemystryJS solves this problem. It provides a common API for plugin authors to hook in to, so all the hard work happens once, and all plugins can communicate which allows them to extend or react to other plugins. AND! One last added bonus, KemystryJS's styling system automaticly manages all styles of a plugin and any of its states using a style tag, no inline styles here, which allows for better readability, cleaner html, and easier overwriting by non KemystryJS stylesheets due to lower specificity than inline styles. :)
+
+For Users:
+We all know the story of plugins in the wild.
+Just a couple examples: 
++ Include jQuery-2.0.js and jquery.superPlugin.js to your html, then Add "$(".selector").superPlugin({some: options});" to your main js file.
++ Add "superplugin.js" the add the class "superPlugin-item-class-js" to the elements you want to check and call "superPluginInit();" in your main js file.
+
+If only running one plugin on one set of elements the above may be relativly harmless. But, what if you wanted to even just use 3 plugins across multiple sets of elements. Implementation can quickly become sloppy and haphazard using class names that should only be used for styling, or creating new classes for each plugin to use on its own. Why!? AND I didnt even mention if you wanted each to have different basic config differences! woop! There must be a better way?
+
+In KemystryJS all plugins, also known as Kemycals, use the exact same simple interface and don't rely on classes at all. Instead, KemystryJS uses Formulas. You can think of Formulas like classes on crack or classes 2.0 because Formulas don't just tell a plugin where it should execute but can also tell the plugin simple instance configuration options or status information. 
+
+Additionally, Every KemystryJS plugin, also known as a Kemycal, that you add to your page are automaticly loaded and when found in a Formula are automaticly executed. No need to figure out selectors and call a silly function. You may not even need to touch javascript at all in most situations. 
 
 ## Advantages
 
