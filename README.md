@@ -7,6 +7,7 @@ For Developers:
 
 It's an abstraction library that takes care of the boilerplate, so you can focus on what the plugin actually does.
 
+
 For Users:
 
 It's a simple way to add functionality to elements with minimal effort.
@@ -15,11 +16,14 @@ It's a simple way to add functionality to elements with minimal effort.
 ## Introduction
 
 For Developers:
+
 The hardest part of building plugins is not the logic itself, it's the boring stuff; setting up event listeners, merging user configs, managing classes, handling "states", dispatching events, etc... 
 
 Furthermore, on the Web today, most plugins are released as "jQuery" plugins, dont get me wrong, jQuery is great, but why should I load all of jQuery if the only reason is a plugin. Most plugins regardless of if through jQuery or Standalone exist isolated from each other, which means they all repeat the same expensive tasks and are unable to work togeather. KemystryJS solves this problem. It provides a common API for plugin authors to hook in to, so all the hard work happens once, and all plugins can communicate which allows them to extend or react to other plugins. AND! One last added bonus, KemystryJS's styling system automaticly manages all styles of a plugin and any of its states using a style tag, no inline styles here, which allows for better readability, cleaner html, and easier overwriting by non KemystryJS stylesheets due to lower specificity than inline styles. :)
 
+
 For Users:
+
 We all know the story of plugins in the wild.
 Just a couple examples: 
 + Include jQuery-2.0.js and jquery.superPlugin.js to your html, then Add "$(".selector").superPlugin({some: options});" to your main js file.
