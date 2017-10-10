@@ -1,7 +1,7 @@
 # KemystryJS
 
 KemystryJS is a library designed to make writing and using plugins fun and simple. 
-
+This is a Work In Progress and will have changes as we fine tune its abilities.
 
 For Developers:
 
@@ -72,9 +72,7 @@ Additionally, Every KemystryJS plugin, also known as a Kemycal, that you add to 
 ```
 
 ## Glossary
-These are just brief descriptions about terms associtated with KemystryJS. For extended documentation see: [Full KemystryJS Documentation](http://wearekemy.com). 
-
-Kemystry was based on a pun of *chemisty* mixed with *Kemy*, from [We Are Kemy](http://wearekemy.com). With that the core idea of KemystryJS lended itself to many of the terms and methods set forth in real chemistry... hehe ... If you know about chemistry hopefully alot of these terms actually make it easier to use.
+These are just brief descriptions about terms associtated with KemystryJS. For extended documentation see: [Full KemystryJS Documentation](http://code.kemystry.life/kemystryjs). 
 
 **Kemycal**: 
 > A component/plugin/addon built for use with `KemystryJS`.
@@ -120,7 +118,7 @@ Kemystry was based on a pun of *chemisty* mixed with *Kemy*, from [We Are Kemy](
  
 The MIT License (MIT)
 
-Copyright © 2016 Keal Jones <keal@wearekemy.com>
+Copyright © 2017 Keal Jones <keal@kemystry.life>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
