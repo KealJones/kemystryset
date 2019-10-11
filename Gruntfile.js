@@ -49,7 +49,7 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      //options: grunt.file.readJSON(".jshintrc"),
+      options: grunt.file.readJSON(".jshintrc"),
       dist: {
         src: "<%= concat.dist.dest %>"
       }

@@ -1,10 +1,10 @@
 /*!
  * Kemystry.js - v0.1.0
  *
- * Copyright (c) 2016 Keal Jones @ We Are Kemy <http://wearekemy.com>
+ * Copyright (c) 2019 Keal Jones @ We Are Kemy <http://wearekemy.com>
  * Released under the MIT license
  *
- * Date: 2016-04-07
+ * Date: 2019-10-10
  */
 (function(root, factory) {
     "use strict";
