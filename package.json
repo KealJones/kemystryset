@@ -11,9 +11,9 @@
     "grunt": "^1.0.4",
     "grunt-contrib-compass": "*",
     "grunt-contrib-concat": "*",
-    "grunt-contrib-jshint": "^2.0.0",
+    "grunt-contrib-jshint": "^2.1.0",
     "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-contrib-uglify": "*",
+    "grunt-contrib-uglify": "^4.0.1",
     "grunt-contrib-watch": "*",
     "grunt-shell": "~0.2.2"
   }
