@@ -8,7 +8,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "devDependencies": {
-    "grunt": "^1.0.3",
+    "grunt": "^1.0.4",
     "grunt-contrib-compass": "*",
     "grunt-contrib-concat": "*",
     "grunt-contrib-jshint": "^2.0.0",
